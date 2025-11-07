@@ -7499,14 +7499,14 @@ function Library:CreateWindow(WindowInfo)
             Library:Toggle()
         end, 74093292717999)
 
-        lckbtn = Library:AddDraggableButton("", function(self)
+        lckbtn = Library:AddDraggableButton("Unlocked", function(self)
             Library.CantDragForced = not Library.CantDragForced
             if Library.CantDragForced then
-                self.Icon.Image = "rbxassetid://10723434711"
+                self:SetText("Locked")
             else
-                self.Icon.Image = "rbxassetid://10723407389"
+                self:SetText("Unlocked")
             end
-        end, 10723407389)
+        end)
 
         if WindowInfo.MobileButtonsSide == "Right" then
             tglbtn.Button.Position = UDim2.new(1, -50, 0, 6)
