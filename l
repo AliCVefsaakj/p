@@ -1435,8 +1435,9 @@ function Library:MakeOutline(Frame: GuiObject, Corner: number?, ZIndex: number?)
     return Holder
 end
 
-function Library:AddDraggableButton(Text: string, Func, Icon)
+function Library:AddDraggableButton(Text: string, Func, Icon, ColorIcon)
     tbl = {}
+    lbl = nil
 
     btn = New("TextButton", {
         BackgroundColor3 = "BackgroundColor",
@@ -1463,20 +1464,22 @@ function Library:AddDraggableButton(Text: string, Func, Icon)
             Position = UDim2.fromScale(0.5, 0.5),
             AnchorPoint = Vector2.new(0.5, 0.5),
             Image = "rbxassetid://" .. Icon,
-            ImageColor3 = "AccentColor",
+            ImageColor3 = ColorIcon and Color3.fromRGB(255, 0, 0) or "AccentColor",
             Parent = btn,
         })
         tbl.Icon = icn
     else
-        lbl = New("TextLabel", {
-            BackgroundTransparency = 1,
-            Size = UDim2.fromScale(1, 1),
-            Text = Text,
-            TextSize = 14,
-            Font = Library.Scheme.Font,
-            TextColor3 = "FontColor",
-            Parent = btn,
-        })
+        lbl = Instance.new("TextLabel")
+        lbl.BackgroundTransparency = 1
+        lbl.Size = UDim2.fromScale(1, 1)
+        lbl.Text = Text
+        lbl.TextSize = 14
+        lbl.FontFace = Font.fromEnum(Enum.Font.Gotham)
+        lbl.TextColor3 = Library.Scheme.FontColor
+        lbl.Parent = btn
+        tbl.Label = lbl
+        
+        Library.Registry[lbl] = {TextColor3 = "FontColor"}
     end
 
     tbl.Button = btn
@@ -1486,15 +1489,22 @@ function Library:AddDraggableButton(Text: string, Func, Icon)
     Library:MakeDraggable(btn, btn, true)
 
     function tbl:SetText(txt)
-        if lbl then
-            lbl.Text = txt
+        if tbl.Label then
+            tbl.Label.Text = txt
         end
-        x, y = Library:GetTextBounds(txt, Library.Scheme.Font, 14)
+        x, y = Library:GetTextBounds(txt, Font.fromEnum(Enum.Font.Gotham), 14)
         btn.Size = UDim2.fromOffset(math.max(x * Library.DPIScale * 2 + 16, 44), 44)
         Library:UpdateDPI(btn, {
             Size = UDim2.fromOffset(math.max(x * 2 + 16, 44), 44),
         })
     end
+    
+    function tbl:SetIconColor(col)
+        if tbl.Icon then
+            tbl.Icon.ImageColor3 = col
+        end
+    end
+    
     tbl:SetText(Text)
 
     return tbl
@@ -7499,14 +7509,17 @@ function Library:CreateWindow(WindowInfo)
             Library:Toggle()
         end, 74093292717999)
 
-        lckbtn = Library:AddDraggableButton("Unlocked", function(self)
+        lockicon = Library:GetIcon("lock")
+        lckbtn = Library:AddDraggableButton("", function(self)
             Library.CantDragForced = not Library.CantDragForced
             if Library.CantDragForced then
-                self:SetText("Locked")
+                self:SetIconColor(Color3.fromRGB(0, 255, 0))
             else
-                self:SetText("Unlocked")
+                self:SetIconColor(Color3.fromRGB(255, 0, 0))
             end
-        end)
+        end, lockicon and lockicon.Id or 10723434711, true)
+        
+        lckbtn:SetIconColor(Color3.fromRGB(255, 0, 0))
 
         if WindowInfo.MobileButtonsSide == "Right" then
             tglbtn.Button.Position = UDim2.new(1, -50, 0, 6)
